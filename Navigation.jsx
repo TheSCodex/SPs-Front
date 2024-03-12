@@ -15,15 +15,24 @@ function StackLogin(){
         <LoginStack.Navigator initialRouteName="Home">
             <LoginStack.Screen
             name="Inicio"
-            component={Home}>
+            component={Home}
+            options={{
+                headerShown: false
+            }}>
             </LoginStack.Screen>
             <LoginStack.Screen
             name="Login"
-            component={Login}>
+            component={Login}
+            options={{
+                headerShown: false
+            }}>
             </LoginStack.Screen>
             <LoginStack.Screen
             name="Registrarse"
-            component={Register}>
+            component={Register}
+            options={{
+                headerShown: false
+            }}>
             </LoginStack.Screen>
         </LoginStack.Navigator>
     )
