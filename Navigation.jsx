@@ -15,7 +15,7 @@ function StackLogin(){
         <LoginStack.Navigator initialRouteName="Home">
             <LoginStack.Screen
             name="Inicio"
-            component={Home}
+            component={HomeApp}
             options={{
                 headerShown: false
             }}>
