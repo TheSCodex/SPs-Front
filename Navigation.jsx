@@ -8,82 +8,54 @@ import Reservation from "./screens/App/Reservation";
 import Directions from "./screens/App/Directions";
 import Occuppied from "./screens/App/Occupied";
 
-const LoginStack = createStackNavigator()
-
-function StackLogin(){
-    return(
-        <LoginStack.Navigator initialRouteName="Home">
-            <LoginStack.Screen
-            name="Inicio"
-            component={HomeApp}
-            options={{
-                headerShown: false
-            }}>
-            </LoginStack.Screen>
-            <LoginStack.Screen
-            name="Login"
-            component={Login}
-            options={{
-                headerShown: false
-            }}>
-            </LoginStack.Screen>
-            <LoginStack.Screen
-            name="Registrarse"
-            component={Register}
-            options={{
-                headerShown: false
-            }}>
-            </LoginStack.Screen>
-        </LoginStack.Navigator>
-    )
+const LoginStack = createStackNavigator();
+function StackLogin() {
+  return (
+    <LoginStack.Navigator initialRouteName="Home">
+      <LoginStack.Screen
+        name="Inicio"
+        component={Home}
+        options={{ headerShown: false }}
+      />
+      <LoginStack.Screen
+        name="Login"
+        component={Login}
+        options={{ headerShown: false }}
+      />
+      <LoginStack.Screen
+        name="Registrarse"
+        component={Register}
+        options={{ headerShown: false }}
+      />
+    </LoginStack.Navigator>
+  );
 }
 
-const AppStack = createStackNavigator()
-
-function StackApp(){
-    return(
-        <AppStack.Navigator initialRouteName="Home">
-            <AppStack.Screen
-            name="Inicio"
-            component={HomeApp}>
-            </AppStack.Screen>
-            <AppStack.Screen
-            name="Reservar"
-            component={Reservation}>  
-            </AppStack.Screen>
-            <AppStack.Screen
-            name="Direcciones"
-            component={Directions}>  
-            </AppStack.Screen>
-            <AppStack.Screen
-            name="¡Lugar ocupado!"
-            component={Occuppied}>  
-            </AppStack.Screen>
-        </AppStack.Navigator>
-    )
+const AppStack = createStackNavigator();
+function StackApp() {
+  return (
+    <AppStack.Navigator initialRouteName="HomeApp">
+      <AppStack.Screen name="HomeApp" component={HomeApp} options={{headerShown:false}} />
+      <AppStack.Screen name="Reservar" component={Reservation} options={{headerShown:false}} />
+      <AppStack.Screen name="Direcciones" component={Directions} options={{headerShown:false}} />
+      <AppStack.Screen name="¡Lugar ocupado!" component={Occuppied} />
+    </AppStack.Navigator>
+  );
 }
 
 const RootStack = createStackNavigator();
-
-function RootNavigator(){
-    return (
-        <RootStack.Navigator initialRouteName="Login" screenOptions={{headerShown: false}}>
-            <RootStack.Screen
-                name="Auth"
-                component={StackLogin}>
-            </RootStack.Screen>
-            <RootStack.Screen
-                name="AppStack"
-                component={StackApp}>
-            </RootStack.Screen>
-        </RootStack.Navigator>
-    )
+function RootNavigator() {
+  return (
+    <NavigationContainer>
+      <RootStack.Navigator
+        initialRouteName="Auth"
+        screenOptions={{ headerShown: false }}
+      >
+        <RootStack.Screen name="Auth" component={StackLogin} />
+        <RootStack.Screen name="AppStack" component={StackApp} />
+      </RootStack.Navigator>
+    </NavigationContainer>
+  );
 }
 
-export default function Navigation(){
-    return(
-        <NavigationContainer>
-            <RootNavigator/>
-        </NavigationContainer>
-    )
-}
+export default RootNavigator;

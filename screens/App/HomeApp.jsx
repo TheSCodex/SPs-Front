@@ -1,10 +1,12 @@
 import { View, Text, StatusBar } from "react-native";
 import React from "react";
-import Parking from "./Parking";
+import Parking from "./Parking/Parking";
 import BtnExit from "./BtnExit";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
 
 export default function HomeApp() {
+  const navigation = useNavigation()
   return (
     <View className="flex flex-col items-center justify-between h-screen bg-primaryColor">
       <StatusBar backgroundColor="#21325E" />
@@ -20,7 +22,7 @@ export default function HomeApp() {
       </View>
       <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
         <TouchableOpacity className="border border-focusColor bg-primaryColor rounded">
-          <Text className="text-white font-bold text-center px-20 py-4 text-base">
+          <Text onPress={()=> navigation.navigate("Reservar")} className="text-white font-bold text-center px-20 py-4 text-base">
             Reservar lugar
           </Text>
         </TouchableOpacity>
