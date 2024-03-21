@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import ParkingCars from "./ParkingCars";
+import Car from "../../../assets/img/car.png";
 
 const ParkingSpots = () => {
   const left1 = 45.9;
@@ -10,21 +11,26 @@ const ParkingSpots = () => {
   const top3 = 195;
   const top4 = 275;
   const top5 = 350;
-  const [occupiedSpots, setOccupiedSpots] = useState([]);
+  // const [occupiedSpots, setOccupiedSpots] = useState([]);
+  const [sensorData, setSensorData] = useState([]);
 
   useEffect(() => {
-    // Simular la ocupación aleatoria de los lugares por el carro
-    const randomSpots = [];
-    const spotsToOccupy = Math.floor(Math.random() * spotsNumbers.length);
-
-    for (let i = 0; i < spotsToOccupy; i++) {
-      const randomIndex = Math.floor(Math.random() * spotsNumbers.length);
-      if (!randomSpots.includes(randomIndex)) {
-        randomSpots.push(randomIndex);
+    const fetchSensorData = async () => {
+      try {
+        const response = await fetch();
+        if (!response.ok) {
+          throw new Error("La solicitud no fue exitosa");
+        }
+        const data = await response.json();
+        setSensorData(sensorData);
+      } catch (error) {
+        console.error("Se produjo un error:", error);
       }
-    }
+    };
+    fetchSensorData();
 
-    setOccupiedSpots(randomSpots);
+    const interval = setInterval(fetchSensorData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const spotsNumbers = [
@@ -52,13 +58,22 @@ const ParkingSpots = () => {
               left: spot.left,
             }}
           >
-            <Text key={spot.number} className="text-white font-bold text-xl">
-              {spot.number}
-            </Text>
+            {sensorData[index]?.state === 0 ? (
+              <Image
+                className="rotate-90 w-9 h-20"
+                source={Car}
+                style={{
+                  position: "absolute",
+                }}
+              />
+            ) : (
+              <Text key={spot.number} className="text-white font-bold text-xl">
+                {spot.number}
+              </Text>
+            )}
           </View>
         ))}
       </View>
-      <ParkingCars occupiedSpots={occupiedSpots} spotsNumbers={spotsNumbers} />
     </>
   );
 };
