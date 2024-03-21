@@ -1,13 +1,49 @@
-import { View, Text, Image, TextInput } from 'react-native'
+import { View, Text, Image, TextInput, Alert } from 'react-native'
 import React, {useState} from 'react'
 import logo from "../../assets/img/Logo.png";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
+import { URL } from '@env';
+
 
 export default function Register() {
-  const [password, setPassword] = useState("");
+
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation()
+
+
+  const handleRegister = async () => {
+    try {
+      const response = await fetch(URL + "/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: name, 
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al registrar el usuario");
+      }
+      console.log(name)
+
+      Alert.alert("Registro exitoso", "¡Cuenta creada correctamente!");
+      console.log("Si se pudo cabrones")
+      navigation.navigate("Login");
+    } catch (error) {
+      console.error("Error de API:", error);
+      Alert.alert("Error", "Ocurrió un error al intentar registrarse");
+    }
+  };
+
 
   return (
     <View className="w-full h-screen bg-primaryColor items-center">
@@ -20,13 +56,17 @@ export default function Register() {
       <View className="flex items-start ">
           <Text className="text-contrastColor font-thin">Nombre completo</Text>
           <TextInput
-          className="text-contrastColor border-b-[1px] border-focusColor w-[250px]">
+          className="text-contrastColor border-b-[1px] border-focusColor w-[250px]"
+          value={name}
+          onChangeText={(text) => setName(text)}>
           </TextInput>
         </View>
         <View className="flex items-start ">
           <Text className="text-contrastColor font-thin">Email</Text>
           <TextInput
-          className="text-contrastColor border-b-[1px] border-focusColor w-[250px]">
+          className="text-contrastColor border-b-[1px] border-focusColor w-[250px]"
+          value={email}
+          onChangeText={(text) => setEmail(text)}>
           </TextInput>
         </View>
         <View className="flex items-start ">
@@ -40,7 +80,8 @@ export default function Register() {
         </View>
       </View>
       <TouchableOpacity
-      className="mt-9 border-focusColor border-[1px] rounded-sm bg-primaryColor p-2 w-36">              
+      className="mt-9 border-focusColor border-[1px] rounded-sm bg-primaryColor p-2 w-36"
+      onPress={handleRegister}>              
         <Text className="text-contrastColor text-center uppercase font-semibold">Regístrate</Text>
       </TouchableOpacity>
         <View className="bg-secondaryColor w-full rounded-md flex justify-center mt-11 h-14">
