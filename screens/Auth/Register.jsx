@@ -36,7 +36,6 @@ export default function Register() {
       console.log(name)
 
       Alert.alert("Registro exitoso", "¡Cuenta creada correctamente!");
-      console.log("Si se pudo cabrones")
       navigation.navigate("Login");
     } catch (error) {
       console.error("Error de API:", error);

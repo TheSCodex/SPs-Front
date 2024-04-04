@@ -34,7 +34,7 @@ function StackLogin() {
 const AppStack = createStackNavigator();
 function StackApp() {
   return (
-    <AppStack.Navigator initialRouteName="HomeApp">
+    <AppStack.Navigator initialRouteName="HomeApps">
       <AppStack.Screen name="HomeApp" component={HomeApp} options={{headerShown:false}} />
       <AppStack.Screen name="Reservar" component={Reservation} options={{headerShown:false}} />
       <AppStack.Screen name="Direcciones" component={Directions} options={{headerShown:false}} />
