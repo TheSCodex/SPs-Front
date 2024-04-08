@@ -5,7 +5,6 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { URL } from '@env';
 
-
 export default function Register() {
 
 
@@ -14,7 +13,6 @@ export default function Register() {
   const [password, setPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation()
-
 
   const handleRegister = async () => {
     try {

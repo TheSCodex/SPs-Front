@@ -4,6 +4,8 @@ import logo from "../../assets/img/Logo.png";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function Login() {
@@ -11,6 +13,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
+
 
   const handleLogin = async () => {
     try {
@@ -24,10 +27,16 @@ export default function Login() {
           password: password,
         }),
       });
-      console.log(URL);
+      console.log('Hola!');
       if (!response.ok) {
         throw new Error("Error al iniciar sesion");
       }
+
+      const responseData = await response.json();
+      const token = responseData.token;
+      console.log(token)
+
+      await AsyncStorage.setItem('token', token);
 
       navigation.navigate("AppStack", { screen: "HomeApp" });
     } catch (error) {

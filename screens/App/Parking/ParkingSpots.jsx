@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import ParkingCars from "./ParkingCars";
+import { URL } from '@env';
 
 const ParkingSpots = () => {
   const left1 = 45.9;
@@ -13,31 +14,38 @@ const ParkingSpots = () => {
   const [occupiedSpots, setOccupiedSpots] = useState([]);
 
   useEffect(() => {
-    // Simular la ocupación aleatoria de los lugares por el carro
-    const randomSpots = [];
-    const spotsToOccupy = Math.floor(Math.random() * spotsNumbers.length);
-
-    for (let i = 0; i < spotsToOccupy; i++) {
-      const randomIndex = Math.floor(Math.random() * spotsNumbers.length);
-      if (!randomSpots.includes(randomIndex)) {
-        randomSpots.push(randomIndex);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(URL + "/status/parkingSpots");
+        if (!response.ok) {
+          throw new Error('Error en la solicitud de estacionamiento');
+        }
+        const parkingData = await response.json();
+        
+        const occupiedSpotsIds = parkingData
+          .filter(spot => spot.statusID === 0)
+          .map(spot => spot.id);
+        
+        setOccupiedSpots(occupiedSpotsIds);
+      } catch (error) {
+        console.error("Error fetching parking status:", error);
       }
-    }
+    };
 
-    setOccupiedSpots(randomSpots);
+    fetchData();
   }, []);
 
   const spotsNumbers = [
-    { number: 1, top: top1, left: left1 },
-    { number: 2, top: top2, left: left1 },
-    { number: 3, top: top3, left: left1 },
-    { number: 4, top: top4, left: left1 },
-    { number: 5, top: top5, left: left1 },
-    { number: 6, top: top5, left: left2 },
-    { number: 7, top: top4, left: left2 },
-    { number: 8, top: top3, left: left2 },
-    { number: 9, top: top2, left: left2 },
-    { number: 10, top: top1, left: 215 },
+    { id: 1, number: 1, top: top1, left: left1 },
+    { id: 2, number: 2, top: top2, left: left1 },
+    { id: 3, number: 3, top: top3, left: left1 },
+    { id: 4, number: 4, top: top4, left: left1 },
+    { id: 5, number: 5, top: top5, left: left1 },
+    { id: 6, number: 6, top: top5, left: left2 },
+    { id: 7, number: 7, top: top4, left: left2 },
+    { id: 8, number: 8, top: top3, left: left2 },
+    { id: 9, number: 9, top: top2, left: left2 },
+    { id: 10, number: 10, top: top1, left: 215 },
   ];
 
   return (
@@ -52,7 +60,7 @@ const ParkingSpots = () => {
               left: spot.left,
             }}
           >
-            <Text key={spot.number} className="text-white font-bold text-xl">
+            <Text key={spot.id} className="text-white font-bold text-xl">
               {spot.number}
             </Text>
           </View>
