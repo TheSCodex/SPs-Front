@@ -1,35 +1,193 @@
 import { View, Text, StatusBar } from "react-native";
-import React from "react";
-import Parking from "./Parking/Parking";
+import React, { useState, useEffect } from "react";
 import BtnExit from "./BtnExit";
+import Parking from "./Parking/Parking";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { URL } from "@env";
+import { decode } from "base-64";
+import { jwtDecode } from "jwt-decode";
+import ParkingDirections from "./Parking/ParkingDirections";
 
 export default function HomeApp() {
-  const navigation = useNavigation()
+  global.atob = decode;
+  const navigation = useNavigation();
+  const [availableSpots, setAvailableSpots] = useState(0);
+  const [hasReservation, setHasReservation] = useState(false);
+  const [noAvailableSpots, setNoAvailableSpots] = useState(false);
+  const [reservationID, setReservationID] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [reservationCancelled, setReservationCancelled] = useState(false);
+  const [triggerRender, setTriggerRender] = useState(false);
+  const [cancelClicked, setCancelClicked] = useState(false);
+
+
+  useEffect(() => {
+    const getTokenAndDecode = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const cleanedToken = token.trim();
+        if (cleanedToken) {
+          const parts = cleanedToken.split(".");
+          const joinedParts = parts.join(".");
+          const decodedToken = jwtDecode(joinedParts);
+          if (decodedToken.userId && decodedToken.userId !== undefined) {
+            setUserId(decodedToken.userId);
+          } else {
+            console.log("UserID doesn't exist.");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+
+    getTokenAndDecode();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(URL + "/status/parkingSpots");
+        if (!response.ok) {
+          throw new Error("Error en la solicitud de estacionamiento");
+        }
+        const parkingData = await response.json();
+        if (parkingData){
+          setTriggerRender((prevState) => !prevState);
+        }
+        const filteredSpots = parkingData.filter(
+          (spot) => spot.statusId === 1 || spot.statusId === 4
+        );
+        
+        const availableSpotsCount = filteredSpots.length;
+        setAvailableSpots(availableSpotsCount);
+        
+      } catch (error) {
+        console.error("Error fetching parking status:", error);
+      }
+    };
+
+    fetchData();
+  }, [triggerRender]);
+
+  const handleReservePress = () => {
+    navigation.navigate("Reservar");
+  };
+
+
+  useEffect(() => {
+    const getReservation = async () => {
+      try {
+        const response = await fetch(`${URL}/reservations/user/${userId}`);
+        if (!response.ok) {
+          throw new Error("Error en la solicitud de reservaciones");
+        }
+        const data = await response.json();
+        if (data.length > 0 && data[0].status === "Active") {
+          setNoAvailableSpots(false);
+          setHasReservation(true);
+          setReservationID(data[0].id);
+          // setTriggerRender((prevState) => !prevState);
+        } else {
+          setHasReservation(false);
+          // setTriggerRender((prevState) => !prevState);
+        }
+      } catch (error) {
+        console.error(
+          `Error al obtener las reservaciones del usuario con ID ${userId}:`,
+          error
+        );
+      }
+    };
+
+    getReservation();
+  }, [userId, triggerRender]);
+
+
+  useEffect(() => {
+    if (cancelClicked && reservationID !== null) {
+      const cancelReservation = async () => {
+        try {
+          const response = await fetch(`${URL}/reservations/cancel/${reservationID}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+  
+          if (!response.ok) {
+            throw new Error("Error al cancelar la reserva");
+          }
+          setTriggerRender((prevState) => !prevState);
+          console.log("Reserva cancelada exitosamente.");
+        } catch (error) {
+          console.error(`Hubo un error al cancelar la reservación ${error}`);
+        }
+      };
+  
+      cancelReservation();
+      // Reiniciamos el estado cancelClicked
+      setCancelClicked(false);
+    }
+  }, [cancelClicked, reservationID]);
+  
+  // Función para manejar el clic en el botón de cancelación
+  const handleCancelClick = () => {
+    setCancelClicked(true);
+  };
+  
+
   return (
     <View className="flex flex-col items-center justify-between h-screen bg-primaryColor">
       <StatusBar backgroundColor="#21325E" />
       <BtnExit />
       <View className="space-x-2 flex-row bg-focusColor rounded-2xl w-[75%] h-12 justify-center items-center">
-        <Text className="text-white font-bold text-lg">7</Text>
-        <Text className="text-white font-semibold text-lg">
-          Lugares disponibles
-        </Text>
-      </View>
-      <View className='w-full h-1/2'>
-        <Parking />
-      </View>
-      <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
-        <TouchableOpacity className="border border-focusColor bg-primaryColor rounded">
-          <Text onPress={()=> navigation.navigate("Reservar")} className="text-white font-bold text-center px-20 py-4 text-base">
-            Reservar lugar
+        {hasReservation ? (
+          <View>
+            <Text className="text-white font-bold text-lg">
+              ¡Lugar reservado exitosamente!
+            </Text>
+          </View>
+        ) : (
+          <Text>
+            <Text className="text-white font-bold text-lg">{availableSpots} </Text>
+            <Text className="text-white font-semibold text-lg">Lugares disponibles</Text>
           </Text>
-        </TouchableOpacity>
-        <Text className="text-white text-xs px-6 text-center">
-          Se te asignará el lugar más cercano a la entrada del estacionamiento.
-        </Text>
+        )}
       </View>
+      {hasReservation ? (
+        <View className="w-full h-1/2">
+          <ParkingDirections userId={userId} />
+        </View>
+      ) : (
+        <View className="w-full h-1/2">
+          <Parking />
+        </View>
+      )}
+
+      {noAvailableSpots ? (
+        <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
+          <Text className="text-white text-md px-6 text-center">No hay lugares de estacionamiento disponibles.</Text>
+          <Text className="text-white text-md px-6 text-center">Por favor, vuelve a intentarlo más tarde.</Text>
+        </View>
+      ) : hasReservation ? (
+        <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
+          <Text className="text-white text-md px-6 text-center">Sigue las instrucciones para encontrar tu lugar.</Text>
+          <TouchableOpacity onPress={handleCancelClick} className="border border-focusColor bg-primaryColor rounded">
+            <Text className="text-white font-bold text-center px-20 py-4 text-base">Cancelar reservación</Text>
+          </TouchableOpacity>
+
+        </View>
+      ) : (
+        <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
+          <TouchableOpacity onPress={handleReservePress} className="border border-focusColor bg-primaryColor rounded">
+            <Text className="text-white font-bold text-center px-20 py-4 text-base">Reservar lugar</Text>
+          </TouchableOpacity>
+          <Text className="text-white text-xs px-6 text-center">Se te asignará un lugar según la demanda de estacionamiento.</Text>
+        </View>
+      )}
     </View>
   );
 }

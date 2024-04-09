@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text } from "react-native";
 import ParkingCars from "./ParkingCars";
-import Car from "../../../assets/img/car.png";
+import { URL } from '@env';
 
 const ParkingSpots = () => {
   const left1 = 45.9;
@@ -11,40 +11,56 @@ const ParkingSpots = () => {
   const top3 = 195;
   const top4 = 275;
   const top5 = 350;
-  // const [occupiedSpots, setOccupiedSpots] = useState([]);
-  const [sensorData, setSensorData] = useState([]);
+  const [parking, setParking] = useState([]);
+  const [occupiedSpots, setOccupiedSpots] = useState([]);
+  const [reservedSpots, setReservedSpots] = useState([]);
+  const [triggerRender, setTriggerRender] = useState(false); 
 
   useEffect(() => {
-    const fetchSensorData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch();
+        const response = await fetch(URL + "/status/parkingSpots");
         if (!response.ok) {
-          throw new Error("La solicitud no fue exitosa");
+          throw new Error('Error en la solicitud de estacionamiento');
         }
-        const data = await response.json();
-        setSensorData(sensorData);
+        const parkingData = await response.json();
+        setParking(parkingData)
+        const occupiedSpotsIds = parkingData
+          .filter(spot => spot.statusId === 3)
+          .map(spot => spot.id);
+        const reservedSpotsIds = parkingData
+          .filter(spot => spot.statusId === 2)
+          .map(spot => spot.id)
+        
+        setOccupiedSpots(occupiedSpotsIds);
+        setReservedSpots(reservedSpotsIds);
+        setTriggerRender(prevState => !prevState);
       } catch (error) {
-        console.error("Se produjo un error:", error);
+        console.error("Error fetching parking status:", error);
       }
     };
-    fetchSensorData();
 
-    const interval = setInterval(fetchSensorData, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchData();
+  }, [triggerRender]);
+
+
+  useEffect(() => {
+
+  }, [occupiedSpots, reservedSpots, triggerRender]); 
 
   const spotsNumbers = [
-    { number: 1, top: top1, left: left1 },
-    { number: 2, top: top2, left: left1 },
-    { number: 3, top: top3, left: left1 },
-    { number: 4, top: top4, left: left1 },
-    { number: 5, top: top5, left: left1 },
-    { number: 6, top: top5, left: left2 },
-    { number: 7, top: top4, left: left2 },
-    { number: 8, top: top3, left: left2 },
-    { number: 9, top: top2, left: left2 },
-    { number: 10, top: top1, left: 215 },
+    { id: 1, number: 1, top: top1, left: left1 },
+    { id: 2, number: 2, top: top2, left: left1 },
+    { id: 3, number: 3, top: top3, left: left1 },
+    { id: 4, number: 4, top: top4, left: left1 },
+    { id: 5, number: 5, top: top5, left: left1 },
+    { id: 6, number: 6, top: top5, left: left2 },
+    { id: 7, number: 7, top: top4, left: left2 },
+    { id: 8, number: 8, top: top3, left: left2 },
+    { id: 9, number: 9, top: top2, left: left2 },
+    { id: 10, number: 10, top: top1, left: 215 },
   ];
+
 
   return (
     <>
@@ -58,24 +74,23 @@ const ParkingSpots = () => {
               left: spot.left,
             }}
           >
-            {sensorData[index]?.state === 0 ? (
-              <Image
-                className="rotate-90 w-9 h-20"
-                source={Car}
-                style={{
-                  position: "absolute",
-                }}
-              />
-            ) : (
-              <Text key={spot.number} className="text-white font-bold text-xl">
-                {spot.number}
-              </Text>
-            )}
+            <Text key={spot.id} style={[styles.spotText, reservedSpots.includes(spot.id) ? { color: 'gray' } : null]}>
+              {spot.number}
+            </Text>
           </View>
         ))}
       </View>
+      <ParkingCars reservedSpots={reservedSpots} occupiedSpots={occupiedSpots} spotsNumbers={spotsNumbers} />
     </>
   );
+};
+
+const styles = {
+  spotText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
 };
 
 export default ParkingSpots;

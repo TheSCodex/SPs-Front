@@ -5,9 +5,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { URL } from '@env';
 
-
 export default function Register() {
-
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,6 +13,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation()
 
+  // console.log(URL);
 
   const handleRegister = async () => {
     try {
@@ -33,10 +32,8 @@ export default function Register() {
       if (!response.ok) {
         throw new Error("Error al registrar el usuario");
       }
-      console.log(name)
 
       Alert.alert("Registro exitoso", "¡Cuenta creada correctamente!");
-      console.log("Si se pudo cabrones")
       navigation.navigate("Login");
     } catch (error) {
       console.error("Error de API:", error);
