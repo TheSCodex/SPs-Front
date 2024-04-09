@@ -14,7 +14,6 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
-
   const handleLogin = async () => {
     try {
       const response = await fetch(URL + "/users/login", {
@@ -27,14 +26,12 @@ export default function Login() {
           password: password,
         }),
       });
-      console.log('Hola!');
       if (!response.ok) {
         throw new Error("Error al iniciar sesion");
       }
 
       const responseData = await response.json();
       const token = responseData.token;
-      console.log(token)
 
       await AsyncStorage.setItem('token', token);
 

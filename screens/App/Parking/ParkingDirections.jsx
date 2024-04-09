@@ -16,7 +16,6 @@ import ParkingCars from "./ParkingCars";
 import { URL } from '@env';
 
 function ParkingDirections({ userId }) {
-  console.log("El userID es:", userId)
   const [directionsImage, setDirectionsImage] = useState(null)
   const [selectedSpot, setSelectedSpot] = useState(null);
 
@@ -55,6 +54,7 @@ function ParkingDirections({ userId }) {
     if (selectedSpot && spotIdToImageMap[selectedSpot]) {
       setDirectionsImage(spotIdToImageMap[selectedSpot]);
     }
+    console.log("El lugar reservado es", selectedSpot);
   }, [selectedSpot]);
 
   return (

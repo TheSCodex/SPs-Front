@@ -43,41 +43,20 @@ export default function Reservation() {
     getTokenAndDecode(); 
   }, []); 
 
-  useEffect(() => {
-    const fetchAvailableParkingSpot = async () => {
-      try {
-        const response = await fetch(URL + '/status/availableParkingSpots');
-        if (!response.ok) {
-          throw new Error('Error en la solicitud de estacionamiento');
-        }
-        const data = await response.json();
-        const randomIndex = Math.floor(Math.random() * data.length);
-        const spot = data[randomIndex];
-        setSelectedSpot(spot);
-        if (!selectedSpot){
-          isLoading(true);
-        } else {
-          isLoading(false)
-        }
-      } catch (error) {
-        console.error("Error al obtener lugares de estacionamiento disponibles:", error);
-      }
-    };
-
-    fetchAvailableParkingSpot(); 
-  }, []); 
-
   const handleConfirmReservation = async () => {
-
     const currentDate = new Date().toISOString();
     const formattedDate = currentDate.slice(0, -1);
 
-    if (!selectedSpot || !userId){
-      console.log("No existe o el userId o el SelectedSpot")
-      console.log("Selected spot:", selectedSpot)
+    if (!userId){
       console.log("UserId", userId);
       return
     };
+
+    const userResponse = await fetch(URL + '/users/' + userId);
+    if (!userResponse.ok) {
+      console.error("User does not exist:", userId);
+      return;
+    }  
 
     try {
       const response = await fetch(URL + '/reservation', {
@@ -87,7 +66,6 @@ export default function Reservation() {
         },
         body: JSON.stringify({
           userId: userId,
-          spotId: selectedSpot.id,
           reservationTime: formattedDate,
           initialFee: 22
         })
@@ -99,19 +77,19 @@ export default function Reservation() {
 
       const responseData = await response.json();
       console.log("Reserva creada con ID:", responseData.reservationId);
-      navigation.navigate("Direcciones", {userId: userId});
+      navigation.navigate("HomeApp", {userId: userId});
     } catch (error) {
       console.error("Error al crear la reserva:", error);
     }
   };
 
+
   useEffect(() => {
-    if (userId !== null && selectedSpot !== null) {
+    if (userId !== null) {
       isLoading(false);
       console.log("User ID:", userId);
-      console.log("Selected Spot:", selectedSpot);
     }
-  }, [userId, selectedSpot]);
+  }, [userId]);
 
   return (
     <View className="flex flex-col items-center justify-between h-screen bg-primaryColor">
@@ -124,7 +102,7 @@ export default function Reservation() {
         <Text className="text-white font-bold text-lg">$22</Text>
       </View>
       <View className='w-full h-1/2'>
-        <Parking />
+        <Parking selectedSpot={selectedSpot}/>
       </View>
       <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
         <TouchableOpacity onPress={handleConfirmReservation} className="border border-focusColor bg-primaryColor rounded">
@@ -138,7 +116,7 @@ export default function Reservation() {
           </Text>
         : 
         <Text className="text-white text-xs px-6 text-center">
-        Su lugar asignado es el lugar: {selectedSpot && selectedSpot.spotCode}.
+          Se te asignará un lugar según la demanda.
         </Text>}          
         <Text className="text-white text-xs px-6 text-center">
         </Text>

@@ -7,12 +7,13 @@ import { URL } from '@env';
 
 export default function Register() {
 
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");  
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation()
+
+  // console.log(URL);
 
   const handleRegister = async () => {
     try {
@@ -31,7 +32,6 @@ export default function Register() {
       if (!response.ok) {
         throw new Error("Error al registrar el usuario");
       }
-      console.log(name)
 
       Alert.alert("Registro exitoso", "¡Cuenta creada correctamente!");
       navigation.navigate("Login");

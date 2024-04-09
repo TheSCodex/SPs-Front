@@ -11,7 +11,10 @@ const ParkingSpots = () => {
   const top3 = 195;
   const top4 = 275;
   const top5 = 350;
+  const [parking, setParking] = useState([]);
   const [occupiedSpots, setOccupiedSpots] = useState([]);
+  const [reservedSpots, setReservedSpots] = useState([]);
+  const [triggerRender, setTriggerRender] = useState(false); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,19 +24,29 @@ const ParkingSpots = () => {
           throw new Error('Error en la solicitud de estacionamiento');
         }
         const parkingData = await response.json();
-        
+        setParking(parkingData)
         const occupiedSpotsIds = parkingData
-          .filter(spot => spot.statusID === 0)
+          .filter(spot => spot.statusId === 3)
           .map(spot => spot.id);
+        const reservedSpotsIds = parkingData
+          .filter(spot => spot.statusId === 2)
+          .map(spot => spot.id)
         
         setOccupiedSpots(occupiedSpotsIds);
+        setReservedSpots(reservedSpotsIds);
+        setTriggerRender(prevState => !prevState);
       } catch (error) {
         console.error("Error fetching parking status:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [triggerRender]);
+
+
+  useEffect(() => {
+
+  }, [occupiedSpots, reservedSpots, triggerRender]); 
 
   const spotsNumbers = [
     { id: 1, number: 1, top: top1, left: left1 },
@@ -48,6 +61,7 @@ const ParkingSpots = () => {
     { id: 10, number: 10, top: top1, left: 215 },
   ];
 
+
   return (
     <>
       <View className="absolute">
@@ -60,15 +74,23 @@ const ParkingSpots = () => {
               left: spot.left,
             }}
           >
-            <Text key={spot.id} className="text-white font-bold text-xl">
+            <Text key={spot.id} style={[styles.spotText, reservedSpots.includes(spot.id) ? { color: 'gray' } : null]}>
               {spot.number}
             </Text>
           </View>
         ))}
       </View>
-      <ParkingCars occupiedSpots={occupiedSpots} spotsNumbers={spotsNumbers} />
+      <ParkingCars reservedSpots={reservedSpots} occupiedSpots={occupiedSpots} spotsNumbers={spotsNumbers} />
     </>
   );
+};
+
+const styles = {
+  spotText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
 };
 
 export default ParkingSpots;
