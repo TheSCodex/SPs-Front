@@ -14,6 +14,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
+  console.log(URL);
+
   const handleLogin = async () => {
     try {
       const response = await fetch(URL + "/users/login", {

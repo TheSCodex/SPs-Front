@@ -16,6 +16,22 @@ const ParkingSpots = () => {
   const [reservedSpots, setReservedSpots] = useState([]);
   const [triggerRender, setTriggerRender] = useState(false); 
 
+  const mapOccupiedSpotsIds = (parkingData) => {
+    const mapping = {
+      1: 1,
+      2: 3,
+      3: 5,
+      4: 7,
+      5: 9
+    };
+
+    const occupiedSpotsIds = parkingData
+      .filter(spot => spot.statusId === 3)
+      .map(spot => mapping[spot.id]);
+
+    return occupiedSpotsIds;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -24,13 +40,12 @@ const ParkingSpots = () => {
           throw new Error('Error en la solicitud de estacionamiento');
         }
         const parkingData = await response.json();
-        setParking(parkingData)
-        const occupiedSpotsIds = parkingData
-          .filter(spot => spot.statusId === 3)
-          .map(spot => spot.id);
+        setParking(parkingData);
+
+        const occupiedSpotsIds = mapOccupiedSpotsIds(parkingData);
         const reservedSpotsIds = parkingData
           .filter(spot => spot.statusId === 2)
-          .map(spot => spot.id)
+          .map(spot => spot.id);
         
         setOccupiedSpots(occupiedSpotsIds);
         setReservedSpots(reservedSpotsIds);
@@ -43,10 +58,10 @@ const ParkingSpots = () => {
     fetchData();
   }, [triggerRender]);
 
-
   useEffect(() => {
-
-  }, [occupiedSpots, reservedSpots, triggerRender]); 
+    console.log(URL);
+    console.log(occupiedSpots);
+  }, []);
 
   const spotsNumbers = [
     { id: 1, number: 1, top: top1, left: left1 },
@@ -60,7 +75,6 @@ const ParkingSpots = () => {
     { id: 9, number: 9, top: top2, left: left2 },
     { id: 10, number: 10, top: top1, left: 215 },
   ];
-
 
   return (
     <>

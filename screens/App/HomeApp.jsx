@@ -22,8 +22,8 @@ export default function HomeApp() {
   const [triggerRender, setTriggerRender] = useState(false);
   const [cancelClicked, setCancelClicked] = useState(false);
 
-
   useEffect(() => {
+    console.log(URL);
     const getTokenAndDecode = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
@@ -65,7 +65,7 @@ export default function HomeApp() {
         setAvailableSpots(availableSpotsCount);
         
       } catch (error) {
-        console.error("Error fetching parking status:", error);
+        console.error("Error fetching parking status in HomeApp:", error);
       }
     };
 

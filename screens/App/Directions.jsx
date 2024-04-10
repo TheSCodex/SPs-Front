@@ -7,6 +7,7 @@ import ParkingDirections from "./Parking/ParkingDirections";
 
 export default function Directions({ route }) {
   const { userId } = route.params;
+  console.log(URL);
   console.log("El user id es:", userId)
   const navigation = useNavigation();
   return (

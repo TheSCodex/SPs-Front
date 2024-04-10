@@ -10,8 +10,8 @@ const ParkingCars = ({ occupiedSpots, spotsNumbers }) => {
           key={spotIndex}
           style={{
             position: 'absolute',
-            top: spotsNumbers[spotIndex].top-23,
-            left: spotsNumbers[spotIndex].left-10,
+            top: spotsNumbers[spotIndex - 1].top-23,
+            left: spotsNumbers[spotIndex - 1].left-10,
           }}
         >
           <Image

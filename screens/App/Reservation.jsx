@@ -15,6 +15,7 @@ export default function Reservation() {
   const [userId, setUserId] = useState(null);
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [loading, isLoading] = useState(false);
+  console.log(URL);
 
   useEffect(() => {
     const getTokenAndDecode = async () => {

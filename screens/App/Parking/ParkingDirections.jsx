@@ -21,6 +21,7 @@ function ParkingDirections({ userId }) {
 
   useEffect(() => {
     const getReservation = async () => {
+      console.log(URL);
       try {
         const response = await fetch(`${URL}/reservations/user/${userId}`);
         if (!response.ok) {

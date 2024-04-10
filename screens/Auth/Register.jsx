@@ -13,9 +13,9 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation()
 
-  // console.log(URL);
 
   const handleRegister = async () => {
+    console.log(URL);
     try {
       const response = await fetch(URL + "/users", {
         method: "POST",
