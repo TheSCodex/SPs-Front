@@ -18,12 +18,12 @@ export default function HomeApp() {
   const [noAvailableSpots, setNoAvailableSpots] = useState(false);
   const [reservationID, setReservationID] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [triggerRender, setTriggerRender] = useState(false);
   const [cancelClicked, setCancelClicked] = useState(false);
   const [occupiedSpots, setOccupiedSpots] = useState([])
-  const [verifySpot, setVerifySpot] = useState(false);
   const [checkedIn, setCheckedIn] = useState(null);
-
+  const [reservationData, setReservationData] = useState([])
+  const [initialFee, setInitialFee] = useState(null);
+  const [totalFee, setTotalFee] = useState(null);
 
   useEffect(() => {
     console.log(URL);
@@ -73,9 +73,6 @@ export default function HomeApp() {
           throw new Error("Error en la solicitud de estacionamiento");
         }
         const parkingData = await response.json();
-        if (parkingData) {
-          setTriggerRender((prevState) => !prevState);
-        }
         const filteredSpots = parkingData.filter(
           (spot) => spot.statusId === 1 || spot.statusId === 4
         );
@@ -91,7 +88,8 @@ export default function HomeApp() {
     };
   
     fetchData();
-  }, [triggerRender]);
+  }, [occupiedSpots]); 
+  
   
 
   const handleReservePress = () => {
@@ -107,11 +105,12 @@ export default function HomeApp() {
           throw new Error("Error en la solicitud de reservaciones");
         }
         const data = await response.json();
-
+        setReservationData(data)
         if (data.length > 0 && data[0].status === "Active") {
           setNoAvailableSpots(false);
           setHasReservation(true);
           setReservationID(data[0].id);
+          setInitialFee(reservationData[0].initialFee)
           if (occupiedSpots.includes(data[0].spotId)) {
             navigation.navigate("Ocupado", {id: reservationID});
           }  
@@ -119,10 +118,11 @@ export default function HomeApp() {
           setReservationID(data[0].id);
           setHasReservation(false)
           setCheckedIn(true)
-          setTriggerRender((prevState) => !prevState);
         } else if (data.length > 0 && data[0].status == 'Completed') {
           setHasReservation(false)
           setCheckedIn(false)
+          setTotalFee(data[0].totalFee)
+          
         } else {
           setHasReservation(false);
         }
@@ -133,9 +133,10 @@ export default function HomeApp() {
         );
       }
     };
-
+  
     getReservation();
-  }, [userId, triggerRender]);
+  }, [reservationData]);
+  
 
   useEffect(() => {
     if (cancelClicked && reservationID !== null) {
@@ -151,7 +152,6 @@ export default function HomeApp() {
           if (!response.ok) {
             throw new Error("Error al cancelar la reserva");
           }
-          setTriggerRender((prevState) => !prevState);
           console.log("Reserva cancelada exitosamente.");
         } catch (error) {
           console.error(`Hubo un error al cancelar la reservación ${error}`);
@@ -216,7 +216,7 @@ export default function HomeApp() {
         </View>
       ) : checkedIn ? (
         <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
-          <TouchableOpacity onPress={() => navigation.navigate("Check-Out", {id: reservationID})} className="border border-focusColor bg-primaryColor rounded">
+          <TouchableOpacity onPress={() => navigation.navigate("Check-Out", {id: reservationID, initialFee: initialFee})} className="border border-focusColor bg-primaryColor rounded">
             <Text className="text-white font-bold text-center px-20 py-4 text-base">Hacer Check-Out</Text>
           </TouchableOpacity>
         </View>

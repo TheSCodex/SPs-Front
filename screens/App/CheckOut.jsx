@@ -8,6 +8,8 @@ const CheckOut = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const reservationID = route.params?.id;
+    const initialFee = route.params?.initialFee;
+    console.log(initialFee)
 
     const handleCheckOut = async () => {
         console.log(URL);
@@ -23,6 +25,7 @@ const CheckOut = () => {
             body: JSON.stringify({
                 id: reservationID,
                 checkInTime: formattedDate,
+                initialFee: initialFee,
             })
         });
         if (!response.ok){

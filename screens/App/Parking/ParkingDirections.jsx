@@ -36,7 +36,7 @@ function ParkingDirections({ userId }) {
     };
 
     getReservation(); 
-  }, [userId]);
+  }, [userId, selectedSpot]);
 
   useEffect(() => {
     const spotIdToImageMap = {

@@ -14,7 +14,6 @@ const ParkingSpots = () => {
   const [parking, setParking] = useState([]);
   const [occupiedSpots, setOccupiedSpots] = useState([]);
   const [reservedSpots, setReservedSpots] = useState([]);
-  const [triggerRender, setTriggerRender] = useState(false); 
 
   const mapOccupiedSpotsIds = (parkingData) => {
     const mapping = {
@@ -41,7 +40,7 @@ const ParkingSpots = () => {
         }
         const parkingData = await response.json();
         setParking(parkingData);
-
+  
         const occupiedSpotsIds = mapOccupiedSpotsIds(parkingData);
         const reservedSpotsIds = parkingData
           .filter(spot => spot.statusId === 2)
@@ -49,19 +48,14 @@ const ParkingSpots = () => {
         
         setOccupiedSpots(occupiedSpotsIds);
         setReservedSpots(reservedSpotsIds);
-        setTriggerRender(prevState => !prevState);
       } catch (error) {
         console.error("Error fetching parking status in parking spots:", error);
       }
     };
-
+  
     fetchData();
-  }, [triggerRender]);
 
-  useEffect(() => {
-    console.log(URL);
-    console.log(occupiedSpots);
-  }, []);
+  }, [parking]); 
 
   const spotsNumbers = [
     { id: 1, number: 1, top: top1, left: left1 },
