@@ -7,6 +7,7 @@ import HomeApp from "./screens/App/HomeApp";
 import Reservation from "./screens/App/Reservation";
 import Directions from "./screens/App/Directions";
 import Occuppied from "./screens/App/Occupied";
+import CheckOut from "./screens/App/CheckOut";
 
 const LoginStack = createStackNavigator();
 function StackLogin() {
@@ -38,7 +39,9 @@ function StackApp() {
       <AppStack.Screen name="HomeApp" component={HomeApp} options={{headerShown:false}} />
       <AppStack.Screen name="Reservar" component={Reservation} options={{headerShown:false}} />
       <AppStack.Screen name="Direcciones" component={Directions} options={{headerShown:false}} />
-      <AppStack.Screen name="¡Lugar ocupado!" component={Occuppied} />
+      <AppStack.Screen name="Ocupado" component={Occuppied}  options={{headerShown:false}}/>
+      <AppStack.Screen name="Check-Out" component={CheckOut}  options={{headerShown:false}}/>
+
     </AppStack.Navigator>
   );
 }

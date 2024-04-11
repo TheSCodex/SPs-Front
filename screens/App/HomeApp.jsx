@@ -1,4 +1,4 @@
-import { View, Text, StatusBar } from "react-native";
+import { View, Text, StatusBar, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import BtnExit from "./BtnExit";
 import Parking from "./Parking/Parking";
@@ -18,9 +18,12 @@ export default function HomeApp() {
   const [noAvailableSpots, setNoAvailableSpots] = useState(false);
   const [reservationID, setReservationID] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [reservationCancelled, setReservationCancelled] = useState(false);
   const [triggerRender, setTriggerRender] = useState(false);
   const [cancelClicked, setCancelClicked] = useState(false);
+  const [occupiedSpots, setOccupiedSpots] = useState([])
+  const [verifySpot, setVerifySpot] = useState(false);
+  const [checkedIn, setCheckedIn] = useState(null);
+
 
   useEffect(() => {
     console.log(URL);
@@ -46,6 +49,22 @@ export default function HomeApp() {
     getTokenAndDecode();
   }, []);
 
+  const mapOccupiedSpotsIds = (parkingData) => {
+    const mapping = {
+      1: 1,
+      2: 3,
+      3: 5,
+      4: 7,
+      5: 9
+    };
+  
+    const occupiedSpotsIds = parkingData
+      .filter(spot => spot.statusId === 3)
+      .map(spot => mapping[spot.id]);
+  
+    return occupiedSpotsIds;
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -54,23 +73,26 @@ export default function HomeApp() {
           throw new Error("Error en la solicitud de estacionamiento");
         }
         const parkingData = await response.json();
-        if (parkingData){
+        if (parkingData) {
           setTriggerRender((prevState) => !prevState);
         }
         const filteredSpots = parkingData.filter(
           (spot) => spot.statusId === 1 || spot.statusId === 4
         );
-        
+  
         const availableSpotsCount = filteredSpots.length;
         setAvailableSpots(availableSpotsCount);
-        
+  
+        const spotsOccupied = mapOccupiedSpotsIds(parkingData);
+        setOccupiedSpots(spotsOccupied);
       } catch (error) {
         console.error("Error fetching parking status in HomeApp:", error);
       }
     };
-
+  
     fetchData();
   }, [triggerRender]);
+  
 
   const handleReservePress = () => {
     navigation.navigate("Reservar");
@@ -85,14 +107,24 @@ export default function HomeApp() {
           throw new Error("Error en la solicitud de reservaciones");
         }
         const data = await response.json();
+
         if (data.length > 0 && data[0].status === "Active") {
           setNoAvailableSpots(false);
           setHasReservation(true);
           setReservationID(data[0].id);
-          // setTriggerRender((prevState) => !prevState);
+          if (occupiedSpots.includes(data[0].spotId)) {
+            navigation.navigate("Ocupado", {id: reservationID});
+          }  
+        } else if (data.length > 0 && data[0].status === 'Checked-In') {
+          setReservationID(data[0].id);
+          setHasReservation(false)
+          setCheckedIn(true)
+          setTriggerRender((prevState) => !prevState);
+        } else if (data.length > 0 && data[0].status == 'Completed') {
+          setHasReservation(false)
+          setCheckedIn(false)
         } else {
           setHasReservation(false);
-          // setTriggerRender((prevState) => !prevState);
         }
       } catch (error) {
         console.error(
@@ -104,7 +136,6 @@ export default function HomeApp() {
 
     getReservation();
   }, [userId, triggerRender]);
-
 
   useEffect(() => {
     if (cancelClicked && reservationID !== null) {
@@ -128,12 +159,10 @@ export default function HomeApp() {
       };
   
       cancelReservation();
-      // Reiniciamos el estado cancelClicked
       setCancelClicked(false);
     }
   }, [cancelClicked, reservationID]);
   
-  // Función para manejar el clic en el botón de cancelación
   const handleCancelClick = () => {
     setCancelClicked(true);
   };
@@ -148,6 +177,12 @@ export default function HomeApp() {
           <View>
             <Text className="text-white font-bold text-lg">
               ¡Lugar reservado exitosamente!
+            </Text>
+          </View>
+        ) : checkedIn ? (
+          <View>
+            <Text className="text-white font-bold text-lg">
+              ¡Has hecho Check In!
             </Text>
           </View>
         ) : (
@@ -178,7 +213,12 @@ export default function HomeApp() {
           <TouchableOpacity onPress={handleCancelClick} className="border border-focusColor bg-primaryColor rounded">
             <Text className="text-white font-bold text-center px-20 py-4 text-base">Cancelar reservación</Text>
           </TouchableOpacity>
-
+        </View>
+      ) : checkedIn ? (
+        <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">
+          <TouchableOpacity onPress={() => navigation.navigate("Check-Out", {id: reservationID})} className="border border-focusColor bg-primaryColor rounded">
+            <Text className="text-white font-bold text-center px-20 py-4 text-base">Hacer Check-Out</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <View className=" bg-secondaryColor w-full h-[22%] flex justify-center items-center rounded-t-3xl space-y-2">

@@ -51,7 +51,7 @@ const ParkingSpots = () => {
         setReservedSpots(reservedSpotsIds);
         setTriggerRender(prevState => !prevState);
       } catch (error) {
-        console.error("Error fetching parking status:", error);
+        console.error("Error fetching parking status in parking spots:", error);
       }
     };
 
