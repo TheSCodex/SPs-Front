@@ -16,17 +16,17 @@ const ParkingSpots = () => {
   const [reservedSpots, setReservedSpots] = useState([]);
 
   const mapOccupiedSpotsIds = (parkingData) => {
-    const mapping = {
-      1: 1,
-      2: 3,
-      3: 5,
-      4: 7,
-      5: 9
-    };
+    // const mapping = {
+    //   1: 1,
+    //   2: 3,
+    //   3: 5,
+    //   4: 7,
+    //   5: 9,
+    // };
 
     const occupiedSpotsIds = parkingData
       .filter(spot => spot.statusId === 3)
-      .map(spot => mapping[spot.id]);
+      .map(spot => spot.id);
 
     return occupiedSpotsIds;
   };
@@ -45,6 +45,8 @@ const ParkingSpots = () => {
         const reservedSpotsIds = parkingData
           .filter(spot => spot.statusId === 2)
           .map(spot => spot.id);
+        
+
         
         setOccupiedSpots(occupiedSpotsIds);
         setReservedSpots(reservedSpotsIds);
@@ -69,6 +71,7 @@ const ParkingSpots = () => {
     { id: 9, number: 9, top: top2, left: left2 },
     { id: 10, number: 10, top: top1, left: 215 },
   ];
+
 
   return (
     <>

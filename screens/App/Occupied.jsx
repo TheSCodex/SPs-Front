@@ -13,37 +13,67 @@ export default function Occupied() {
   const [notMe, setNotMe] = useState(false)
   const [checkedIn, setCheckedIn] = useState(false)
 
+  const handleItsNotMeButton = () => {
+    Alert.alert(
+      'Parece que tu lugar ha sido ocupado por alguien más.',
+      'Se ha notificado al guardia en turno para verificar.',
+      [
+        {
+          text: 'Aceptar',
+          onPress: () => navigation.navigate("HomeApp", ),
+        },
+      ],
+    )
+    navigation.navigate("HomeApp")
+  }
+
   const handleItsMeButton = async () => {
     console.log(URL);
-    console.log("Hola")
+    console.log("El id es", reservationID);
     const currentDate = new Date().toISOString();
     const formattedDate = currentDate.slice(0, -1);
 
-    try {
-      const response = await fetch(URL + "/reservations/check-in/" + reservationID, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: reservationID,
-          checkInTime: formattedDate,
-        })
-      });
-      if (!response.ok){
-        throw new Error("Error de api");
+    if (reservationID !== null){
+      try {
+        const response = await fetch(URL + "/reservations/check-in/" + reservationID, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: reservationID,
+            checkInTime: formattedDate,
+          })
+        });
+        if (!response.ok){
+          throw new Error("Error de api");
+        }
+        console.log("Se hizo el checkin")
+      } catch (error){
+        console.log("Error en la solicitud de check-in", error)
+      } finally {
+        Alert.alert(
+          'Check In',
+          'Se cobrará una cuota de $10.00MXN por cada hora de tu estancia',
+          [
+            {
+              text: 'Aceptar',
+              onPress: () => navigation.navigate("HomeApp", {checkedIn: checkedIn}),
+            },
+          ],
+          {
+            cancelable: false,
+          }
+        )
       }
-      console.log("Se hizo el checkin")
-    } catch (error){
-      console.log("Error en la solicitud de check-in", error)
-    } finally {
+    } else {
       Alert.alert(
-        'Check In',
-        'Se cobrará una cuota de $10.00MXN por cada hora de tu estancia',
+        'Erro de conexión',
+        'Hubo un error recuperando tus datos. Por favor, verifica tu conexión a internet.',
         [
           {
             text: 'Aceptar',
-            onPress: () => navigation.navigate("HomeApp", {checkedIn: checkedIn}),
+            onPress: () => navigation.navigate("HomeApp"),
           },
         ],
         {
@@ -51,7 +81,7 @@ export default function Occupied() {
         }
       )
     }
-  }
+  } 
 
   return (
     <View className="relative">
@@ -70,7 +100,7 @@ export default function Occupied() {
             <TouchableOpacity onPress={handleItsMeButton} className="p-2 bg-yellow-300 rounded-md">
               <Text className="text-white text-sm">Sí, soy yo.</Text>
             </TouchableOpacity>
-            <TouchableOpacity className="p-2 border-[1px] border-yellow-300 rounded-md">
+            <TouchableOpacity onPress={handleItsNotMeButton} className="p-2 border-[1px] border-yellow-300 rounded-md">
               <Text className="text-white text-sm">No, no soy yo.</Text>
             </TouchableOpacity>
           </View>

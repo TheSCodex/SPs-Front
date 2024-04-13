@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import BtnExit from "./BtnExit";
 import Parking from "./Parking/Parking";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { URL } from "@env";
 import { decode } from "base-64";
@@ -13,7 +13,8 @@ import ParkingDirections from "./Parking/ParkingDirections";
 export default function HomeApp() {
   global.atob = decode;
   const navigation = useNavigation();
-  const [availableSpots, setAvailableSpots] = useState(0);
+  const [availableSpots, setAvailableSpots] = useState(null)
+  const [availableSpotsLength, setAvailableSpotsLength] = useState(0);
   const [hasReservation, setHasReservation] = useState(false);
   const [noAvailableSpots, setNoAvailableSpots] = useState(false);
   const [reservationID, setReservationID] = useState(null);
@@ -24,6 +25,9 @@ export default function HomeApp() {
   const [reservationData, setReservationData] = useState([])
   const [initialFee, setInitialFee] = useState(null);
   const [totalFee, setTotalFee] = useState(null);
+
+  const route = useRoute();
+  const [isOccupied, setIsOccupied] = useState(false)
 
   useEffect(() => {
     console.log(URL);
@@ -50,43 +54,75 @@ export default function HomeApp() {
   }, []);
 
   const mapOccupiedSpotsIds = (parkingData) => {
-    const mapping = {
-      1: 1,
-      2: 3,
-      3: 5,
-      4: 7,
-      5: 9
-    };
+    // const mapping = {
+    //   1: 1,
+    //   2: 3,
+    //   3: 5,
+    //   4: 7,
+    //   5: 9
+    // };
   
     const occupiedSpotsIds = parkingData
       .filter(spot => spot.statusId === 3)
-      .map(spot => mapping[spot.id]);
+      .map(spot =>spot.id);
   
     return occupiedSpotsIds;
   };
-  
+
+  const mapAvailableSpotsIds = (parkingData) => {
+    // const mapping = {
+    //   1: 1,
+    //   2: 3,
+    //   3: 5,
+    //   4: 7,
+    //   5: 9
+    // };
+
+    const availableSpotsIds = parkingData
+      .filter(spot => spot.statusId === 1 || spot.statusId == 4)
+      .map(spot => spot.id)
+      .filter(id => id !== undefined); 
+
+
+
+    return availableSpotsIds 
+  }  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(URL + "/status/parkingSpots");
         if (!response.ok) {
+            Alert.alert(
+              'Error de conexión',
+              'Hubo un error recuperando los datos. Por favor, verifica tu conexión a internet.',
+              [
+                  {
+                      text: 'Aceptar',
+                  },
+                ],
+          )
           throw new Error("Error en la solicitud de estacionamiento");
         }
         const parkingData = await response.json();
         const filteredSpots = parkingData.filter(
           (spot) => spot.statusId === 1 || spot.statusId === 4
         );
-  
-        const availableSpotsCount = filteredSpots.length;
-        setAvailableSpots(availableSpotsCount);
-  
+        setAvailableSpotsLength(filteredSpots.length);
+        
         const spotsOccupied = mapOccupiedSpotsIds(parkingData);
+        const availableIds = mapAvailableSpotsIds(parkingData);
+        setAvailableSpots(availableIds);
+        if (availableSpots && availableSpots.length === 0){
+          setNoAvailableSpots(true)
+        } else {
+          setNoAvailableSpots(false)
+        }
         setOccupiedSpots(spotsOccupied);
       } catch (error) {
         console.error("Error fetching parking status in HomeApp:", error);
       }
     };
-  
+  // 
     fetchData();
   }, [occupiedSpots]); 
   
@@ -98,45 +134,98 @@ export default function HomeApp() {
 
 
   useEffect(() => {
-    const getReservation = async () => {
-      try {
-        const response = await fetch(`${URL}/reservations/user/${userId}`);
-        if (!response.ok) {
-          throw new Error("Error en la solicitud de reservaciones");
-        }
-        const data = await response.json();
-        setReservationData(data)
-        if (data.length > 0 && data[0].status === "Active") {
-          setNoAvailableSpots(false);
-          setHasReservation(true);
-          setReservationID(data[0].id);
-          setInitialFee(reservationData[0].initialFee)
-          if (occupiedSpots.includes(data[0].spotId)) {
-            navigation.navigate("Ocupado", {id: reservationID});
-          }  
-        } else if (data.length > 0 && data[0].status === 'Checked-In') {
-          setReservationID(data[0].id);
-          setHasReservation(false)
-          setCheckedIn(true)
-        } else if (data.length > 0 && data[0].status == 'Completed') {
-          setHasReservation(false)
-          setCheckedIn(false)
-          setTotalFee(data[0].totalFee)
-          
+    let isMounted = true;
+
+    const handleReservationData = (data) => {
+        if (data.length > 0) {
+            const reservation = data[0];
+            if (reservation.status === "Active") {
+                setNoAvailableSpots(false);
+                setHasReservation(true);
+                setReservationID(reservation.id);
+                setInitialFee(reservation.initialFee);
+                if (occupiedSpots.includes(reservation.spotId) && isOccupied === false && reservationID !== null) {
+                  // console.log("El id de la reservación en el check in es", reservationID)
+                    navigation.navigate("Ocupado", { id: reservationID });
+                    setIsOccupied(true);
+                }
+            } else if (reservation.status === 'Checked-In' && isOccupied === false  ) {
+                setIsOccupied(false)
+                setReservationID(reservation.id);
+                setInitialFee(reservation.initialFee);
+                setHasReservation(false);
+                setCheckedIn(true);
+                if (availableSpots && availableSpots.includes(reservation.spotId) && isOccupied === false){
+                  // console.log("El id de la reservación en el checkout es", reservationID)
+                  navigation.navigate("Check-Out", { id: reservationID, initialFee: initialFee });
+                  setIsOccupied(true);
+                }
+            } else if (reservation.status === 'Completed') {
+                if (isMounted) {
+                    setHasReservation(false);
+                    setCheckedIn(false);
+                    setTotalFee(reservation.totalFee);
+                    deleteReservation(reservation.id);
+                }
+            } else {
+                setHasReservation(false);
+                setIsOccupied(false);
+            }
         } else {
-          setHasReservation(false);
+            setCheckedIn(false)
+            setHasReservation(false);
         }
-      } catch (error) {
-        console.error(
-          `Error al obtener las reservaciones del usuario con ID ${userId}:`,
-          error
-        );
-      }
     };
-  
+
+    const getReservation = async () => {
+        try {
+            const response = await fetch(`${URL}/reservations/user/${userId}`);
+            if (!response.ok) {
+              Alert.alert(
+                'Error de conexión',
+                'Hubo un error recuperando los datos. Por favor, verifica tu conexión a internet.',
+                [
+                    {
+                        text: 'Aceptar',
+                    },
+                  ],
+            )
+                throw new Error("Error en la solicitud de reservaciones");
+            }
+            const data = await response.json();
+            handleReservationData(data);
+        } catch (error) {
+            console.error(
+                `Error al obtener las reservaciones del usuario con ID ${userId}:`,
+                error
+            );
+        }
+    };
+
     getReservation();
-  }, [reservationData]);
-  
+
+    return () => {
+        isMounted = false;
+    };
+}, [userId, occupiedSpots]);
+
+
+const deleteReservation = async (reservationId) => {
+  try {
+      const response = await fetch(`${URL}/reservations/${reservationId}`, {
+          method: 'DELETE'
+      });
+      if (!response.ok) {
+          throw new Error("Error al eliminar la reserva");
+      }
+      console.log("Se eliminó la reserva")
+      setCheckedIn(false);
+      setIsOccupied(false);
+  } catch (error) {
+      console.error("Error al eliminar la reserva:", error);
+  }
+};
+
 
   useEffect(() => {
     if (cancelClicked && reservationID !== null) {
@@ -152,9 +241,13 @@ export default function HomeApp() {
           if (!response.ok) {
             throw new Error("Error al cancelar la reserva");
           }
+          setIsOccupied(false)
+          console.log("Is occupied", isOccupied)
           console.log("Reserva cancelada exitosamente.");
         } catch (error) {
           console.error(`Hubo un error al cancelar la reservación ${error}`);
+        } finally {
+          console.log("Is occupied", isOccupied)
         }
       };
   
@@ -187,7 +280,7 @@ export default function HomeApp() {
           </View>
         ) : (
           <Text>
-            <Text className="text-white font-bold text-lg">{availableSpots} </Text>
+            <Text className="text-white font-bold text-lg">{availableSpotsLength} </Text>
             <Text className="text-white font-semibold text-lg">Lugares disponibles</Text>
           </Text>
         )}

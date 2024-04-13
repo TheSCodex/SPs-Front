@@ -6,17 +6,18 @@ import { useNavigation } from "@react-navigation/native";
 import { URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(""); 
   const navigation = useNavigation();
 
-  // console.log(URL);
-
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Por favor, complete todos los campos.");
+      return;
+    }
     try {
       const response = await fetch(URL + "/users/login", {
         method: "POST",
@@ -41,7 +42,8 @@ export default function Login() {
     } catch (error) {
       console.error("Error de API:", error);
       Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión");
-    }  };
+    }
+  };
 
   return (
     <View className="w-full h-screen bg-primaryColor items-center">
@@ -55,14 +57,15 @@ export default function Login() {
         Iniciar sesión
       </Text>
       <View className="w-full flex flex-col items-center space-y-12 mt-8">
-        <View className="flex items-start ">
+        <View className="flex items-start">
           <Text className="text-contrastColor font-thin">Email</Text>
-          <TextInput 
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          className="text-contrastColor border-b-[1px] border-focusColor w-[250px]"></TextInput>
+          <TextInput
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            className="text-contrastColor border-b-[1px] border-focusColor w-[250px]"
+          ></TextInput>
         </View>
-        <View className="flex items-start ">
+        <View className="flex items-start">
           <Text className="text-contrastColor font-thin">Contraseña</Text>
           <TextInput
             className="text-contrastColor border-b-[1px] border-focusColor w-[250px]"
@@ -71,6 +74,7 @@ export default function Login() {
             onChangeText={(text) => setPassword(text)}
           ></TextInput>
         </View>
+        {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
       </View>
       <TouchableOpacity onPress={handleLogin} className="mt-9 border-focusColor border-[1px] rounded-sm bg-primaryColor p-2 w-36">
         <Text className="text-contrastColor text-center uppercase font-semibold">
