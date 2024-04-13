@@ -13,19 +13,59 @@ export default function Occupied() {
   const [notMe, setNotMe] = useState(false)
   const [checkedIn, setCheckedIn] = useState(false)
 
-  const handleItsNotMeButton = () => {
-    Alert.alert(
-      'Parece que tu lugar ha sido ocupado por alguien más.',
-      'Se ha notificado al guardia en turno para verificar.',
-      [
+  const handleItsNotMeButton = async () => {
+    console.log(URL);
+    console.log("El id es", reservationID);
+    const currentDate = new Date().toISOString();
+    const formattedDate = currentDate.slice(0, -1);
+
+    if (reservationID !== null){
+      try {
+        const response = await fetch(URL + "/reservations/occupied/" + reservationID, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: reservationID,
+            checkInTime: formattedDate,
+          })
+        });
+        if (!response.ok){
+          throw new Error("Error de api");
+        }
+        console.log("Se hizo la actualizacion de la reservación a 'Wrong'")
+      } catch (error){
+        console.log("Error en la solicitud de actualización", error)
+      } finally {
+        Alert.alert(
+          'Parece que tu lugar ha sido ocupado por alguien más.',
+          'Se ha notificado al guardia en turno para verificar.',
+          [
+            {
+              text: 'Aceptar',
+              onPress: () => navigation.navigate("HomeApp", ),
+            },
+          ],
+        )
+        navigation.navigate("HomeApp")
+      }
+    } else {
+      Alert.alert(
+        'Erro de conexión',
+        'Hubo un error recuperando tus datos. Por favor, verifica tu conexión a internet.',
+        [
+          {
+            text: 'Aceptar',
+            onPress: () => navigation.navigate("HomeApp"),
+          },
+        ],
         {
-          text: 'Aceptar',
-          onPress: () => navigation.navigate("HomeApp", ),
-        },
-      ],
-    )
-    navigation.navigate("HomeApp")
-  }
+          cancelable: false,
+        }
+      )
+    }
+  } 
 
   const handleItsMeButton = async () => {
     console.log(URL);

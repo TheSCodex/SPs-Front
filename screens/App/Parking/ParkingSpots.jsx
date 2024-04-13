@@ -25,7 +25,7 @@ const ParkingSpots = () => {
     // };
 
     const occupiedSpotsIds = parkingData
-      .filter(spot => spot.statusId === 3)
+      .filter(spot => spot.statusId === 3 || spot.statusId === 5)
       .map(spot => spot.id);
 
     return occupiedSpotsIds;

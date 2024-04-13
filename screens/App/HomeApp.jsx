@@ -108,6 +108,10 @@ export default function HomeApp() {
           (spot) => spot.statusId === 1 || spot.statusId === 4
         );
         setAvailableSpotsLength(filteredSpots.length);
+
+        if (parkingData.filter(spot => spot.statusId === 5)) {
+          setIsOccupied(false)
+        }
         
         const spotsOccupied = mapOccupiedSpotsIds(parkingData);
         const availableIds = mapAvailableSpotsIds(parkingData);
@@ -145,7 +149,6 @@ export default function HomeApp() {
                 setReservationID(reservation.id);
                 setInitialFee(reservation.initialFee);
                 if (occupiedSpots.includes(reservation.spotId) && isOccupied === false && reservationID !== null) {
-                  // console.log("El id de la reservación en el check in es", reservationID)
                     navigation.navigate("Ocupado", { id: reservationID });
                     setIsOccupied(true);
                 }
@@ -156,7 +159,6 @@ export default function HomeApp() {
                 setHasReservation(false);
                 setCheckedIn(true);
                 if (availableSpots && availableSpots.includes(reservation.spotId) && isOccupied === false){
-                  // console.log("El id de la reservación en el checkout es", reservationID)
                   navigation.navigate("Check-Out", { id: reservationID, initialFee: initialFee });
                   setIsOccupied(true);
                 }
@@ -165,6 +167,7 @@ export default function HomeApp() {
                     setHasReservation(false);
                     setCheckedIn(false);
                     setTotalFee(reservation.totalFee);
+                    console.log("El total fee es", totalFee);
                     deleteReservation(reservation.id);
                 }
             } else {
